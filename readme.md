@@ -1,8 +1,10 @@
 <h1 align="center">Compose Grid</h1>
 
-<p align="center">
 A simple grid implementation for [Compose](https://developer.android.com/compose) and [Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform)
-</p>
+
+![badge-Android](https://img.shields.io/badge/Platform-Android-brightgreen)
+![badge-iOS](https://img.shields.io/badge/Platform-iOS-lightgray)
+![badge-JVM](https://img.shields.io/badge/Platform-JVM-orange)
 
 -------
 
@@ -11,12 +13,6 @@ A simple grid implementation for [Compose](https://developer.android.com/compose
     <a href="#setup">Setup 🛠️</a> &bull;
     <a href="#usage">Usage 🛠️</a>
 </p>
-
-<div align="center">
-![badge-Android](https://img.shields.io/badge/Platform-Android-brightgreen)
-![badge-iOS](https://img.shields.io/badge/Platform-iOS-lightgray)
-![badge-JVM](https://img.shields.io/badge/Platform-JVM-orange)
-</div>
 
 -------
 
