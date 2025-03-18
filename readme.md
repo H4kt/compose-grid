@@ -2,6 +2,7 @@
 
 A simple grid implementation for [Compose](https://developer.android.com/compose) and [Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform)
 
+![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.h4kt.dev%2Freleases%2Fdev%2Fh4kt%2Fcompose-grid%2Fmaven-metadata.xml&logo=apache-maven&label=Maven&color=purple)
 ![badge-Android](https://img.shields.io/badge/Platform-Android-brightgreen)
 ![badge-iOS](https://img.shields.io/badge/Platform-iOS-lightgray)
 ![badge-JVM](https://img.shields.io/badge/Platform-JVM-orange)
