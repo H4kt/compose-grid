@@ -9,7 +9,7 @@ A simple grid implementation for [Compose](https://developer.android.com/compose
 -------
 
 <p align="center">
-    <a href="#whats-included-">What's included 🚀</a> &bull;
+    <a href="#whats-included">What's included 🚀</a> &bull;
     <a href="#setup">Setup 🛠️</a> &bull;
     <a href="#usage">Usage 🛠️</a>
 </p>
