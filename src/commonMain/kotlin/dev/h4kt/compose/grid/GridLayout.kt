@@ -8,7 +8,7 @@ import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastRoundToInt
 import dev.h4kt.compose.grid.types.GridDataModifierNode
 import dev.h4kt.compose.grid.types.GridScope
@@ -22,8 +22,8 @@ fun Grid(
     modifier: Modifier = Modifier,
     columns: List<GridSize>,
     rows: List<GridSize>,
-    verticalSpacing: Dp,
-    horizontalSpacing: Dp,
+    verticalSpacing: Dp = 0.dp,
+    horizontalSpacing: Dp = 0.dp,
     content: @Composable GridScope.() -> Unit
 ) = Layout(
     modifier = modifier,
@@ -41,16 +41,58 @@ fun Grid(
     val heightWithoutSpacing = constraints.maxHeight - verticalSpacingPx * rows.lastIndex
     val rowHeights = rows.calculateSizes(this, heightWithoutSpacing)
 
-    val placeables = measurables.measure(
+    val cells = measurables.measure(
         columnWidths = columnWidths,
         rowHeights = rowHeights,
         verticalSpacing = verticalSpacingPx,
         horizontalSpacing = horizontalSpacingPx
     )
 
-    return@Layout layout(constraints.maxWidth, constraints.maxHeight) {
-        placeables.forEach { (placeable, offset) ->
-            placeable.place(offset)
+    val width = cells
+        .toList()
+        .chunked(columnWidths.size)
+        .maxOf { row ->
+            val uniqueItems = row.toSet().filterNotNull()
+            val itemsWidth = uniqueItems.sumOf { it.width }
+            val spacing = horizontalSpacingPx * uniqueItems.size.dec().coerceAtLeast(0)
+
+            return@maxOf itemsWidth + spacing
+        }
+
+    val height = cells
+        .mapIndexed { index, placeable ->
+            val columnIndex = index % columnWidths.size
+            return@mapIndexed columnIndex to placeable
+        }
+        .groupBy { (columnIndex) -> columnIndex }
+        .values
+        .map {
+            it.map { (_, placeable) -> placeable }
+        }
+        .maxOf { column ->
+            val uniqueItems = column.toSet().filterNotNull()
+            val itemsHeight = uniqueItems.sumOf { it.height }
+            val spacing = verticalSpacingPx * uniqueItems.size.dec().coerceAtLeast(0)
+
+            return@maxOf itemsHeight + spacing
+        }
+
+    return@Layout layout(width, height) {
+        val placed = mutableSetOf<Placeable>()
+
+        cells.forEachIndexed { index, placeable ->
+            if (placeable == null || placeable in placed) {
+                return@forEachIndexed
+            }
+
+            val columnIndex = index % columnWidths.size
+            val rowIndex = index / columnWidths.size
+
+            val x = columnWidths.take(columnIndex).sum() + horizontalSpacingPx * columnIndex
+            val y = rowHeights.take(rowIndex).sum() + verticalSpacingPx * rowIndex
+
+            placeable.place(x, y)
+            placed += placeable
         }
     }
 }
@@ -60,22 +102,20 @@ private fun List<Measurable>.measure(
     rowHeights: Array<Int>,
     verticalSpacing: Int,
     horizontalSpacing: Int
-): List<Pair<Placeable, IntOffset>> {
-
-    val cells = Array(columnWidths.size * rowHeights.size) { false }
+): Array<Placeable?> {
+    val cells = Array<Placeable?>(columnWidths.size * rowHeights.size) { null }
     var cellIndex = 0
 
-    return mapNotNull { measurable ->
-
+    forEach { measurable ->
         if (cellIndex !in cells.indices) {
-            return@mapNotNull null
+            return@forEach
         }
 
-        while (cells[cellIndex]) {
+        while (cells[cellIndex] != null) {
             ++cellIndex
 
             if (cellIndex !in cells.indices) {
-                return@mapNotNull null
+                return@forEach
             }
         }
 
@@ -86,25 +126,21 @@ private fun List<Measurable>.measure(
         val columnIndex = cellIndex % columnWidths.size
         val rowIndex = cellIndex / columnWidths.size
 
-        for (x in 0..<columnSpan) {
-            for (y in 0..<rowSpan) {
-                val index = (rowIndex + y) * columnWidths.size + columnIndex + x
-                cells[min(cells.lastIndex, index)] = true
-            }
-        }
-
         val width = columnWidths.drop(columnIndex).take(columnSpan).sum() + horizontalSpacing * columnSpan.dec()
         val height = rowHeights.drop(rowIndex).take(rowSpan).sum() + verticalSpacing * rowSpan.dec()
 
-        val offsetX = columnWidths.take(columnIndex).sum() + horizontalSpacing * columnIndex
-        val offsetY = rowHeights.take(rowIndex).sum() + verticalSpacing * rowIndex
+        val constraints = Constraints.fixed(width, height)
+        val placeable = measurable.measure(constraints)
 
-        val placeable = measurable.measure(
-            Constraints.fixed(width, height)
-        )
-
-        return@mapNotNull placeable to IntOffset(offsetX, offsetY)
+        for (x in 0..<columnSpan) {
+            for (y in 0..<rowSpan) {
+                val index = (rowIndex + y) * columnWidths.size + columnIndex + x
+                cells[min(cells.lastIndex, index)] = placeable
+            }
+        }
     }
+
+    return cells
 }
 
 private fun List<GridSize>.calculateSizes(
@@ -116,7 +152,6 @@ private fun List<GridSize>.calculateSizes(
     val sizes = Array(size) { 0 }
 
     forEachIndexed { index, size ->
-
         if (size !is GridSize.Fixed) {
             return@forEachIndexed
         }
@@ -129,35 +164,26 @@ private fun List<GridSize>.calculateSizes(
 
         sizes[index] = finalValue
         sizeLeft -= finalValue
-
     }
 
-    val totalFractions = sumOf {
-        when (it) {
-            GridSize.Auto -> 1
-            is GridSize.Fraction -> it.value
-            else -> 0
-        }
-    }
+    val totalFractions = asSequence()
+        .filterIsInstance<GridSize.Fraction>()
+        .sumOf { it.value }
 
-    val fractionSize = sizeLeft / totalFractions
+    val fractionSize = if (totalFractions > 0) sizeLeft / totalFractions else 0
 
     forEachIndexed { index, size ->
-
-        val fraction = when (size) {
-            GridSize.Auto -> 1
-            is GridSize.Fraction -> size.value
-            else -> return@forEachIndexed
+        if (size !is GridSize.Fraction) {
+            return@forEachIndexed
         }
 
         val value = min(
             sizeLeft,
-            (fraction.toFloat() * fractionSize).fastRoundToInt()
+            (size.value.toFloat() * fractionSize).fastRoundToInt()
         )
 
         sizes[index] += value
         sizeLeft -= value
-
     }
 
     return sizes

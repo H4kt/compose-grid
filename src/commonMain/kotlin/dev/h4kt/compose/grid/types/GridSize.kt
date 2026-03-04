@@ -4,9 +4,6 @@ import androidx.compose.ui.unit.Dp
 import kotlin.jvm.JvmInline
 
 sealed interface GridSize {
-
-    data object Auto : GridSize
-
     @JvmInline
     value class Fraction(
         val value: Int
@@ -16,5 +13,4 @@ sealed interface GridSize {
     value class Fixed(
         val value: Dp
     ) : GridSize
-
 }

@@ -8,12 +8,6 @@ import kotlin.jvm.JvmInline
 value class SizeBuilder(
     internal val value: MutableList<GridSize> = mutableListOf()
 ) {
-
-    @GridDslMarker
-    fun auto() {
-        value += GridSize.Auto
-    }
-
     @GridDslMarker
     fun fraction(value: Int) {
         this.value += GridSize.Fraction(value)
@@ -25,7 +19,6 @@ value class SizeBuilder(
     }
 
     internal fun build() = value
-
 }
 
 fun sizes(block: SizeBuilder.() -> Unit): List<GridSize> {
