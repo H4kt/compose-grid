@@ -21,7 +21,7 @@ A simple grid implementation for [Compose](https://developer.android.com/compose
 * Support for horizontal and vertical spacing
 * Support for row/column item spanning
 
-> Currently the layout expects you to provide both the row and column size definitions.
+> Currently, the layout expects you to provide both the row and column size definitions.
 > This covered our use-case, however in case your use-case is not covered by a [LazyGrid](https://developer.android.com/develop/ui/compose/lists#lazy-grids)
 > feel free to file an issue, and I'll look into it
 
@@ -38,7 +38,7 @@ repositories {
 
 ```kotlin
 dependencies {
-    implementation("dev.h4kt:compose-grid:0.1.0")
+    implementation("dev.h4kt:compose-grid:0.2.0")
 }
 ```
 </details>
@@ -50,7 +50,7 @@ dependencies {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("dev.h4kt:compose-grid:0.1.0")
+            implementation("dev.h4kt:compose-grid:0.2.0")
         }
     }
 }
