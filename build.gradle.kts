@@ -1,15 +1,16 @@
-plugins {
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
+plugins {
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.compose)
+
+    alias(libs.plugins.android.kmp.library)
 
     alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
 
     alias(libs.plugins.dotenv)
 
     id("maven-publish")
-
 }
 
 group = "dev.h4kt"
@@ -21,10 +22,16 @@ repositories {
 }
 
 kotlin {
-
     withSourcesJar()
 
-    androidTarget()
+    androidLibrary {
+        namespace = "dev.h4kt.compose.grid"
+        compileSdk = 35
+
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
+    }
 
     listOf(
         iosX64(),
@@ -40,18 +47,11 @@ kotlin {
             implementation(compose.foundation)
         }
     }
-
-}
-
-android {
-    namespace = "dev.h4kt.compose.grid"
-    compileSdk = 35
 }
 
 publishing {
     repositories {
         maven {
-
             name = "Personal"
             url = uri("https://repo.h4kt.dev/releases")
 
@@ -59,7 +59,6 @@ publishing {
                 username = project.findProperty("repo.username") as String? ?: System.getenv("USERNAME")
                 password = project.findProperty("repo.key") as String? ?: System.getenv("TOKEN")
             }
-
         }
     }
 }

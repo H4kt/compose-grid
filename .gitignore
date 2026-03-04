@@ -3,3 +3,4 @@
 .kotlin
 build
 .env
+local.properties
