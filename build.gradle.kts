@@ -56,8 +56,8 @@ publishing {
             url = uri("https://repo.h4kt.dev/releases")
 
             credentials {
-                username = project.findProperty("repo.username") as String? ?: System.getenv("USERNAME")
-                password = project.findProperty("repo.key") as String? ?: System.getenv("TOKEN")
+                username = env.REPO_USERNAME.orNull()
+                password = env.REPO_TOKEN.orNull()
             }
         }
     }
